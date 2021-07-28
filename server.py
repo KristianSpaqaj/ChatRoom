@@ -45,6 +45,8 @@ def receive():
         nicknames.append(nickname)
         clients.append(client)
 
+
+
         # prints nickname
         print(f"Nickname is {nickname}")
         broadcast(f"{nickname} joined!\n".encode('utf-8'))
