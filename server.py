@@ -29,7 +29,7 @@ def handle(client):
             clients.remove(client)
             client.close()
             nickname = nicknames[index]
-            broadcast(f'{nickname} left!'.encode('utf-8'))
+            broadcast(f'{nickname} left!\n'.encode('utf-8'))
             nicknames.remove(nickname)
             break
 
