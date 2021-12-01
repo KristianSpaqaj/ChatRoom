@@ -1,9 +1,9 @@
 import socket
 import threading
-from cryptography.fernet import Fernet
 from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
+from Crypto.Util.Padding import pad, unpad
 from base64 import b64encode, b64decode
+import json
 
 ip = '127.0.0.1'
 port = 7001
@@ -15,10 +15,10 @@ client.connect((ip,port))
 #key = Fernet.generate_key()
 #f = Fernet(key)
 #Ctext = f.encrypt(b"test1234")
-data = b"test12345"
-key = "3t6v9y$B&E)H@McQ"
-cipher = AES.new(key, AES.MODE_CBC)
-ct_bytes = cipher.encrypt(pad(data,AES.block_size))
+# data = b"test12345"
+key = b"3t6v9y$B&E)H@McQ"
+
+
 
 
 def receive():
@@ -28,17 +28,23 @@ def receive():
             if message == 'Name':
                 client.send(nickname.encode('utf-8'))
             else:
-                
-                print(message)
-        except:
-            print("An error occured!")
-            client.close()
-            break
-
+                b64 = json.loads(message)
+                iv = b64decode(b64['iv'])
+                ct = b64decode(b64['ciphertext'])
+                cipher = AES.new(key, AES.MODE_CBC, iv)
+                pt = unpad(cipher.decrypt(ct), AES.block_size).decode('utf-8')
+                print(b64['name'] + ": " + json.loads(pt)['data'])
+        except Exception as e: pass
 def write():
     while True:
-        message = f'{nickname}: {input("")}'
-        client.send(message.encode('utf-8'))    
+        #message = f'{nickname}: {input("")}'
+        message = json.dumps({"data":input("")})
+        cipher = AES.new(key, AES.MODE_CBC)
+        ct_bytes = cipher.encrypt(pad(message.encode('utf-8'),AES.block_size))
+        iv = b64encode(cipher.iv).decode('utf-8')
+        ct = b64encode(ct_bytes).decode('utf-8')
+        result = json.dumps({'name' : nickname, 'iv':iv, 'ciphertext':ct})
+        client.send(result.encode('utf-8'))    
 
 
 receive_thread = threading.Thread(target=receive)
