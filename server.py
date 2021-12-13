@@ -3,7 +3,7 @@ import threading
 
 ip = '127.0.0.1'
 port = 7001
-buffer = 1024
+buffer = 2048
 
 # server start
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

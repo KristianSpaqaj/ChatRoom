@@ -31,20 +31,20 @@ def receive():
                 b64 = json.loads(message)
                 iv = b64decode(b64['iv'])
                 ct = b64decode(b64['ciphertext'])
-                cipher = AES.new(key256, AES.MODE_CBC, iv)
-                pt = unpad(cipher.decrypt(ct), AES.block_size).decode('utf-8')
+                cipher = AES.new(key256, AES.MODE_CFB, iv=iv)
+                pt = cipher.decrypt(ct).decode('utf-8')
                 print(b64['name'] + ": " + json.loads(pt)['data'])
         except Exception as e: pass
 def write():
     while True:
         #message = f'{nickname}: {input("")}'
         message = json.dumps({"data":input("")})
-        cipher = AES.new(key256, AES.MODE_CBC)
-        ct_bytes = cipher.encrypt(pad(message.encode('utf-8'),AES.block_size))
+        cipher = AES.new(key256, AES.MODE_CFB)
+        ct_bytes = cipher.encrypt(message.encode('utf-8'))
         iv = b64encode(cipher.iv).decode('utf-8')
         ct = b64encode(ct_bytes).decode('utf-8')
         result = json.dumps({'name' : nickname, 'iv':iv, 'ciphertext':ct})
-        client.send(result.encode('utf-8'))    
+        client.send(result.encode('utf-8'))
 
 
 receive_thread = threading.Thread(target=receive)
